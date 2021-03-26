@@ -1,8 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import guessedWordsContext from './contexts/guessedWordsContext'; 
+import successContext from './contexts/successContext';
+import languageContext from './contexts/languageContext';
+import stringsModule from './helpers/string';
+import { getLetterMatchCount } from './helpers';
 
-function Input ({ secretWord }) {
-    const [currentGuess, setCurrentGuess] = React.useState('');
+function Input ({secretWord}) {
+    
+    const language = React.useContext(languageContext);
+    const [success, setSuccess] = successContext.useSuccess();
+    const [guessedWords, setGuessedWords] = guessedWordsContext.useGuessedWords();
+    const [currentGuess, setCurrentGuess] = React.useState("");
+   
+    
+    if (success) { return null }
     return (
         <div data-test='component-input'>
          <form className="form-inline">
@@ -10,7 +22,7 @@ function Input ({ secretWord }) {
             data-test="input-box"
             className="mb-2 mx-sm-3"
             type="text"
-            placeholder="enter guess"
+            placeholder={stringsModule.getStringByLanguage(language,'guessInputPlaceholder')}
             value={currentGuess}
             onChange={(evt) => setCurrentGuess(evt.target.value) }
         />
@@ -20,11 +32,18 @@ function Input ({ secretWord }) {
          onClick= {(evt) => {
              evt.preventDefault();
              // TODO: update guessedWords
+             const letterMatchCount = getLetterMatchCount(currentGuess, secretWord);
+             const newGuessedWords = [...guessedWords, {guessedWord: currentGuess, letterMatchCount}]
+            setGuessedWords(newGuessedWords);
              // TODO: check against secretWord and update success if needed
-             setCurrentGuess('');
+             if(currentGuess === secretWord){
+                 setSuccess(true)
+             }
+             //clear input box
+             setCurrentGuess("");
          }}
         >
-            Submit
+            {stringsModule.getStringByLanguage(language, 'submit')}
         </button>
          </form>
 
